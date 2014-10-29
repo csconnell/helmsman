@@ -1,0 +1,429 @@
+<!doctype html>
+<title>{{ app_title }}</title>
+
+<script src="{{url_for('static', filename='jquery-2.1.1.min.js')}}"></script>  
+<script src="{{url_for('static', filename='bootstrap/js/bootstrap.min.js')}}"></script> 
+
+
+<link rel=stylesheet type=text/css href="{{url_for('static',filename='bootstrap/css/bootstrap.css')}}">
+    <body>
+        <div class="container">
+            <div class="row">
+                <br>
+                <br>
+            </div>
+            <div class="row">
+                <div class="span12 well  well-small">
+                    
+                    <!-- Show the App Name and Registry Info -->
+                    <div class="col-xs-12 col-md-8">
+                        <h1>{{ app_title }}</h1>
+                        <h5>Registry: {{ host }} </h5>
+                    </div>
+                    
+                    <div class="col-xs-6 col-md-4">
+                        <br>
+                        <br>
+
+                        <!-- Search and Clear buttons - the clear button needs to clear all text back to an empty form -->
+                        <form class="form-inline" id="search" role="form" action="{{url_for('find_repos')}}" method="post">
+                            <div class="form-group">
+                                <input type="text" class="form-control" name="image_search"  autocomplete="off" style="cursor: auto;" class="form-control" id="image_search" value="{{ criteria }}">
+                                <button type="submit" id="search_btn" class="btn btn-primary btn-sm" form-id="search">Search</button>
+                                <button type="button" id="clear" class="btn btn-primary btn-sm" form-id="search" {% if criteria | length == 0 %} disabled  {% endif %} onClick="document.getElementById('image_search').value= ''; document.getElementById('clear').disabled = true; document.getElementById('search_btn').click();">Clear</button>
+                            </div>
+                        </form>
+                    </div>
+
+                <br>
+
+                <!-- This table holds the list of repos, their tags, and important links -->
+                <table class="table table-striped table-condensed table-responsive" overflow="auto">
+                    <th>Repo Name</th>
+                    <th>Repo Actions</th>
+                    <th>Repo Description</th>
+                    <th>Tags</th>
+                    <th>Image ID</th>
+                    <th>Tag Actions</th>
+                    
+                    <!-- Loop through the repos -->
+                    {% for repository in repos %}
+                        <tr>
+                            <td> {{ repository.Name }} </td>
+                            <!-- Add a link to delete the repo -->
+                            <td>
+                                <a class="delete-repo-link" id="delete-repo-link" data-toggle="modal" data-target=".delete-repo-modal-sm" data-id="{{ repository.Name }}">
+                                <image src='{{url_for('static', filename='images/icons/trash.png')}}' title='Delete Repo'>
+
+                            </td>
+                            <td> {{ repository.Description }}</td>
+                            <td> 
+                                {% for tag in repository.Tags %} 
+                                    {% if tag.Image_Link | length > 0 %}
+                                        <a href="{{ tag.Image_Link }}">{{ tag.Tag }}</a>
+                                        <br>
+                                        
+                                    {% else %}
+                                        {{ tag.Tag }}
+                                        <br>
+                                        
+                                    {% endif %}
+                            
+                                {% endfor %}
+
+                            </td>
+                            <td> 
+                                {% for tag in repository.Tags %} 
+                                    {% if tag.Image_Link | length > 0 %}
+                                        {{ tag.Short_ID }}
+                                        <br>
+                                    {% else %}
+                                        <br>
+                                    {% endif %}
+                            
+                                {% endfor %}
+                            </td>
+                            <td>
+                                {% for tag in repository.Tags %} 
+                                    {% if tag.Image_Link | length > 0 %}
+                                        
+                                        <a class="info-link" data-toggle="modal" data-target=".info-modal-lg" data-id="{&quot;link&quot;:&quot;{{url_for('.get_tag_info', image_id=tag.Image_ID)}}&quot;, &quot;repo&quot;:&quot;{{repository.Name}}&quot;,&quot;tag&quot;:&quot;{{tag.Tag}}&quot;}">
+                                            <image src='{{url_for('static', filename='images/icons/inspect.png')}}' title='Image Info'/>
+                                        </a>
+                                        
+                                        <a class="tag-link" id="tag-link-{{repository.Name}}-{{tag.Tag}}" data-toggle="modal" data-target=".tag-modal-lg" data-id="{&quot;id&quot;:&quot;{{ tag.Image_ID }}&quot;, &quot;repo&quot;:&quot;{{ repository.Name}}&quot;}" >
+                                            <image src='{{url_for('static', filename='images/icons/add.png')}}' title='Add Tag to Image'/>
+                                        </a>
+                                        <a class="delete-tag-link" id="delete-tag-link-{{repository.Name}}-{{tag.Tag}}" data-toggle="modal" data-target=".delete-tag-modal-sm" data-id="{&quot;tag&quot;:&quot;{{ tag.Tag }}&quot;, &quot;repo&quot;:&quot;{{ repository.Name}}&quot;}">
+                                            <image src='{{url_for('static', filename='images/icons/trash.png')}}' title='Delete Tag'/>
+                                        <br>
+                                    {% else %}
+                                        <br>
+                                    {% endif %}
+                            
+                                {% endfor %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+
+        <!-- Info Modal that shows details about the image associated with the chosen tag -->
+        <div class="modal fade info-modal-lg" tabindex="-1" role="dialog" aria-labelledby="infoModal" aria-hidden="true" id="infoDialog">
+            <div class="modal-dialog modal-lg">
+            
+                <div class="modal-content">
+                    <div class="modal-header">  
+                        <a class="close" data-dismiss="modal">×</a>  
+                        <h3>Image Information</h3>  
+                    </div>
+              
+                    <div class="modal-body">  
+                        <form role="form">
+                            
+                            <div class="form-group">
+                                <label for="pull_request">To make a pull request, use:</label> 
+                                <a href="#" onclick='return copyToClipboard(pull_request.value)'>(Copy It!)</a>
+                                <input type="text" class="form-control" name="pull_request" readonly="" autocomplete="off" style="cursor: auto; background-color:#5bc0de; border:none" id="pull_request" value="">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="image_parent">Image Parent</label>
+                                <input type="text" class="form-control" name="image_parent" readonly="" autocomplete="off" style="cursor: auto;" id="image_parent" value="">
+                            </div>
+                
+                            <div class="form-group">
+                                <label for="image_author">Author</label>
+                                <input type="text" class="form-control" name="image_author" readonly="" autocomplete="off" style="cursor: auto;" id="image_author" value="">
+                            </div>
+                
+                            <div class="form-group">
+                                <label for="image_created">Creation Date</label>
+                                <input type="text" class="form-control" name="image_created" readonly="" autocomplete="off" style="cursor: auto;" id="image_created" value="">
+                            </div>
+                
+                            <div class="form-group">
+                                <label for="image_id">Image ID</label>
+                                <input type="text" class="form-control" name="image_id" readonly="" autocomplete="off" style="cursor: auto;" id="image_id" value="">
+                            </div>
+                
+                            <div class="form-group">
+                                <label for="exposed_ports">Exposed Ports</label>
+                                <textarea rows="4" class="form-control" name="exposed_ports" readonly="" autocomplete="off" style="cursor: auto;" id="exposed_ports" value=""></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="entrypoints">Entry Points</label>
+                                <textarea rows="4" class="form-control" name="entrypoints" readonly="" autocomplete="off" style="cursor: auto;" id="entrypoints" value=""></textarea>
+                            </div>
+                        </form>
+                    </div>  
+                    <div class="modal-footer">   
+                        <a href="#" class="btn" data-dismiss="modal">Close</a>  
+                    </div>  
+                </div>
+            </div>
+        </div>
+        <!-- End of info modal -->
+
+        <!-- Modal for adding a tag to an image -->
+        <div class="modal fade tag-modal-lg" tabindex="-1" role="dialog" aria-hidden="true" id="tagDialog">
+            <div class="modal-dialog modal-lg">
+            
+                <div class="modal-content">
+                    <div class="modal-header">  
+                        <a class="close" data-dismiss="modal">×</a>  
+                        <h3>Add a New Tag</h3>  
+                    </div>
+              
+                    <div class="modal-body">  
+                        <form class="form" id="add_tag" role="form" action="{{url_for('tag_image')}}" method="post">
+                            <div class="inline">    
+                                <div class="form-group">
+                                    <label for="tag_repository">Repository</label>
+                                    <input type="text" class="form-control" name="tag_repository" readonly autocomplete="off" style="cursor: auto;" class="form-control" id="tag_repository" value="">
+                                </div>
+                                <div class="form-group">
+                                    <label for="tag_image_id">Image ID</label>
+                                    <input type="text" class="form-control" name="tag_image_id"  readonly autocomplete="off" style="cursor: auto;" class="form-control" id="tag_image_id" value="">
+                                </div>
+                                <div class="form-group">
+                                    <label for="tag_name">New Tag</label>
+                                    <input type="text" class="form-control" name="tag_name"  autocomplete="off" style="cursor: auto;" class="form-control" id="tag_name" value="">
+                                </div>
+                            </div>     
+                            <button type="submit" id="search_btn" class="btn btn-primary btn-sm" form-id="add_tag">Add Tag</button>   
+                        </form>
+                    </div>  
+                    <div class="modal-footer">  
+                        <a href="#" class="btn" data-dismiss="modal">Close</a>  
+                    </div>  
+                </div>
+            </div>
+        </div>
+        <!-- End of modal for adding a tag -->
+
+
+        <!-- Modal for deleting a tag -->
+        <div class="modal fade delete-tag-modal-sm" tabindex="-1" role="dialog" aria-hidden="true" id="deleteTagDialog">
+            <div class="modal-dialog modal-sm">
+            
+                <div class="modal-content">
+                    <div class="modal-header">  
+                        <a class="close" data-dismiss="modal">×</a>  
+                        <h3>Confirm Tag Deletion</h3>  
+                    </div>
+              
+                    <div class="modal-body">  
+                        <div class="row">
+                    
+                            <div class="col-xs-18 col-md-12">
+                                Are you sure you want to delete this tag? 
+                            </div>
+                        </div>
+                        <br>
+                        <div class="row">
+                            <div class="col-xs-6 col-md-4">
+                        
+                            </div>
+                            <div class="col-xs-6 col-md-4">
+                                <label id="tag_label"></label>
+                            </div>
+                        </div>
+                        <br>
+                        <div class="row">
+                            <div class="col-xs-6 col-md-4">
+                        
+                            </div>
+                            <div class="col-xs-6 col-md-4">
+                                <input type="text" id="dt_url" hidden name="dt_url"/>   
+                                <button type="submit" id="delete_tag_btn" name="delete-tag-btn" class="btn btn-primary btn-sm delete-tag-btn">Do it!</button>   
+                            </div>
+                        </div>
+                
+                    </div>  
+                    <div class="modal-footer">  
+                
+                        <a href="#" id="close_btn" class="btn" data-dismiss="modal">Close</a>  
+                    </div>  
+                </div>
+            </div>
+        </div>
+        <!-- End of modal for deleting a tag -->
+
+        <!-- Modal for deleting a repo -->
+        <div class="modal fade delete-repo-modal-sm" tabindex="-1" role="dialog" aria-hidden="true" id="deleteRepoDialog">
+            <div class="modal-dialog modal-sm">
+            
+                <div class="modal-content">
+                    <div class="modal-header">  
+                        <a class="close" data-dismiss="modal">×</a>  
+                        <h3>Confirm Repo Deletion</h3>  
+                    </div>
+              
+                    <div class="modal-body">  
+                        <div class="row">
+                    
+                            <div class="col-xs-18 col-md-12">
+                                Are you sure you want to delete this repository?
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-6 col-md-4">
+                        
+                            </div>
+                            <div class="col-xs-6 col-md-4">
+                                <label id="image_repo"></label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-6 col-md-4">
+                        
+                            </div>
+                            <div class="col-xs-6 col-md-4">
+                                <input type="text" id="repo_url" hidden name="repo_url"/>   
+                                <button type="submit" id="delete_repo_btn" name="delete-repo-btn" class="btn btn-primary btn-sm delete-repo-btn">Do it!</button>
+                            </div>
+                        </div>
+                    </div>  
+                    <div class="modal-footer">     
+                        <a href="#" id="close_btn" class="btn" data-dismiss="modal">Close</a>  
+                    </div>  
+                </div>
+            </div>
+        </div>
+        <!-- End of Delete repo modal -->
+
+    </div>
+
+    <script type="text/javascript">
+
+        // Clickin the tag / image info link
+        $(document).on("click", ".info-link", function () 
+        {
+            var linkValue = $(this).data('id').link;
+            
+            var repo = $(this).data('id').repo;
+            var tag = $(this).data('id').tag;
+
+            // Get the host from our flask data
+            // Let's strip of the port if it is 80, because it is really superfluous then.
+            if ('{{ host }}'.match(':80'))
+            {
+                $("#pull_request").val('docker pull {{ host }}'.split(':',1) + '/' + repo + ':' + tag);
+            }
+            else $("#pull_request").val('docker pull {{ host }}');
+
+
+            $.getJSON( linkValue, function(data) 
+            {
+                $("#image_parent").val(data.parent);
+                $("#image_author").val(data.author);
+                $("#image_created").val(data.created);
+                $("#image_id").val(data.id);
+                //console.log(data);
+
+                $("#exposed_ports").text('');
+
+                // ExposedPorts come across as keys
+                var port_keys = Object.keys(data.config.ExposedPorts);
+                for (var ii in port_keys)
+                {
+                    $("#exposed_ports").append(port_keys[ii]);
+                    $("#exposed_ports").append('\r');
+                }
+                
+                $("#entrypoints").text('');
+                for (var ii in data.config.Entrypoint)
+                {
+                   
+                    $("#entrypoints").append(data.config.Entrypoint[ii]);
+                    $("#entrypoints").append('\r');
+                    
+                }
+                
+            })
+            .done(function() 
+            {
+                console.log( "success pulling data" );
+            })
+            .fail(function() 
+            {
+                console.log( "error" );
+            });
+
+     
+        });
+
+        // Clicking the tag add link
+        $(document).on("click", ".tag-link", function () 
+        {
+            var image_id = $(this).data('id').id;
+            var repo = $(this).data('id').repo;
+            
+            $("#tag_image_id").val(image_id);
+            $("#tag_repository").val(repo);
+
+        });
+
+        // Clicking the delete tag link
+        $(document).on("click", ".delete-tag-link", function () 
+        {
+            var tag= $(this).data('id').tag;
+            var repo = $(this).data('id').repo;
+            var url = "{{ url_for('delete_tag') }}" + '?' + $.param({'tag':tag, 'repository':repo})
+
+            $("#tag_label").text(tag)
+            $("input#dt_url").val(url);
+
+        });
+
+        // Deleting a tag
+        $(document).on("click", ".delete-tag-btn", function () 
+        {
+            $.ajax({
+                url: document.getElementById('dt_url').value,
+                type: 'DELETE',
+                success: function(result) {
+                    $("#close_btn").click();
+                    location.reload();
+                }
+            });
+        });
+
+        // Clicking the delete repo link
+        $(document).on("click", ".delete-repo-link", function () 
+        {
+            var repo = $(this).data('id');
+            
+            var url = "{{ url_for('delete_repo') }}" + '?' + $.param({'repository':repo})
+
+            $("#tag_repo").text(repo)
+            $("input#repo_url").val(url);
+
+        });
+
+        // Delete a repo
+        $(document).on("click", ".delete-repo-btn", function () 
+        {       
+            
+            $.ajax({
+                url: document.getElementById('repo_url').value,
+                type: 'DELETE',
+                success: function(result) {
+                    $("#close_btn").click();
+                    location.reload();
+                }
+            });
+
+        });
+
+        // can use for simulating a copy to clipboard kind of function
+        function copyToClipboard (text) {  window.prompt ("Copy to clipboard: Ctrl+C, Enter", text); }
+
+    
+    </script>
+</body>
+
+
