@@ -7,14 +7,14 @@ parser = SafeConfigParser()
 app = Flask(__name__)
 
 parser.read('/opt/docker/helmsman/config/helmsman.cfg')
-base_url = parser.get('repo', 'protocol')  \
-    + parser.get('repo', 'host') + ':' \
-    + parser.get('repo', 'port') + '/' \
-    + parser.get('repo', 'api_version')
+base_url = parser.get('registry', 'protocol')  \
+    + parser.get('registry', 'host') + ':' \
+    + parser.get('registry', 'port') + '/' \
+    + parser.get('registry', 'api_version')
 
 app_title = parser.get('helmsman', 'title')
-host_and_port = parser.get('repo', 'host') + ':' \
-    + parser.get('repo', 'port')
+host_and_port = parser.get('registry', 'host') + ':' \
+    + parser.get('registry', 'port')
 
 
 # This end point retrieves repo information from the registry remote API
@@ -60,7 +60,7 @@ def find_repos():
                 tags.append({'Tag': tag, 'Image_ID': image_id, 'Image_Link': image_link, 'Short_ID': image_id[0:12]})
 
         # With the Lotame setup everything shows under library, this allows us to remove that
-        if parser.getboolean('repo', 'strip_directory') == True:
+        if parser.getboolean('registry', 'strip_directory') == True:
             repo_name = repo['name'].split('/')[1:][0]
 
         else:
