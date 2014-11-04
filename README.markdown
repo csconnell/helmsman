@@ -4,7 +4,7 @@ Helmsman
 Background
 ----------
 
-Helmsman is for managing Docker.  At this time it is specifically for viewing and managing a private Docker repositories.  Helmsman is built on using Python Flask and Twitter Bootstrap.
+Helmsman is for managing Docker.  At this time it is specifically for viewing and managing a private Docker registry.  Helmsman is built on using Python Flask and Twitter Bootstrap.
 
 
 Running Helmsman

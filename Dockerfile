@@ -22,8 +22,8 @@
 FROM        ubuntu:latest
 MAINTAINER  CSConnell "cconnell@lotame.com"
 
-# This next line is for whenever eithe Comment or Description is supported by docker build
-#COMMENT	Helsman is a Docker management tool initially used for managing private repositories.
+# This next line is for whenever either Comment or Description is supported by docker build
+#COMMENT	Helsman is a Docker management tool initially used for managing private registries.
 
 RUN apt-get update
 RUN apt-get install -y python-pip gcc g++
