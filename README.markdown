@@ -63,6 +63,6 @@ Future
 ------
 
 * Refactoring - Create a run.py and move application startup outside of docker_index.py.  Also clean up some less than ideal code!
-* Create configuration and new screens for vieweing docker host information
+* Create configuration and new screens for viewing docker host information
 * Create a home screen for Helmsman so you can see what "modules" exist
 * Add more modules!
