@@ -6,13 +6,13 @@ import requests
 parser = SafeConfigParser()
 app = Flask(__name__)
 
-parser.read('/opt/docker/repo_viewer/config/repo.cfg')
+parser.read('/opt/docker/helmsman/config/helmsman.cfg')
 base_url = parser.get('repo', 'protocol')  \
     + parser.get('repo', 'host') + ':' \
     + parser.get('repo', 'port') + '/' \
     + parser.get('repo', 'api_version')
 
-app_title = parser.get('index', 'title')
+app_title = parser.get('helmsman', 'title')
 host_and_port = parser.get('repo', 'host') + ':' \
     + parser.get('repo', 'port')
 
@@ -28,6 +28,7 @@ def get_repos_web():
 def delete_repo():
     repository = request.args['repository']
     return_code = requests.delete(base_url + '/repositories/' + repository +'/',  allow_redirects=True).text
+    print return_code
     return return_code
 
 
@@ -67,7 +68,15 @@ def find_repos():
         repos.append({'Name': repo_name,
                       'Description': repo['description'],
                       'Tags': tags})
-    return render_template('repo_listing.html', repos=repos, app_title=app_title, host=host_and_port, criteria=criteria)
+
+    registry_version = get_registry_info()
+
+    return render_template('repo_listing.html',
+        repos=repos,
+        app_title=app_title,
+        host=host_and_port,
+        criteria=criteria,
+        registry_version=registry_version)
 
 
 @app.route('/images/info/<string:image_id>', methods=['GET'])
@@ -111,9 +120,15 @@ def delete_tag():
     return return_code
 
 
+def get_registry_info():
+    headers = {'Accept': 'application/json'}
+    registry_info = requests.get(base_url + '/_ping', headers=headers).headers
+    return registry_info['X-Docker-Registry-Version']
+
+
 if __name__ == '__main__':
 
-    port = int(os.environ.get('PORT', parser.get('index', 'port')))
+    port = int(os.environ.get('PORT', parser.get('helmsman', 'port')))
     app.debug = True
     app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
     app.run(host='0.0.0.0', port=port)

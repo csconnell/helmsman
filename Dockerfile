@@ -1,36 +1,39 @@
 ###############################################################################################
-## CSC 10/30/2013
+## CSC 10/29/2014
 ## 
-## This image holds a simple project for viewing the library of the repo on
-## depot.dev.lotame.com
+## This image holds a simple project for viewing a private repo
 ##
-## Build with docker build -t depot.dev.lotame.com/repo-viewer -rm .
+## Build with docker build -t depot.dev.lotame.com/helmsman -rm .
 ##
 ## Run with something like this:
 ##
-##    docker run -d -name=repo_viewer -p 33912:33912 -v /opt/docker/repo/repositories/library:/opt/docker/repo/repositories/library -v /opt/docker/repo-viewer/config:/opt/docker/repo_viewer/config depot.dev.lotame.com/repo-viewer
+##    docker run -d -name=helmsman -p 80:80  -v /opt/docker/helsman/config:/opt/docker/helmsman/config depot.dev.lotame.com/helmsman
 ##
-##  This assumes that the repo at depot.dev.lotame.com has been started with a mount at:
-##  /opt/docker/repo/repositories/library
+## Currently the Helmsman config file holds the location of the private registry.
 ##
-##  and that an optional config file for the repo-viewer is mounted at:
-##  /opt/docker/repo_viewer/config
-##  .. otherwise it uses the default if you don't mount the volume.
+## An optional config file for the repo-viewer is mounted at:
+##
+##    /opt/docker/helmsman/config
+##  
+## .. otherwise it uses the default if you don't mount the volume.
 ##
 #############################################################################################
 
 FROM        ubuntu:latest
 MAINTAINER  CSConnell "cconnell@lotame.com"
 
+# This next line is for whenever eithe Comment or Description is supported by docker build
+#COMMENT	Helsman is a Docker management tool initially used for managing private repositories.
+
 RUN apt-get update
-RUN apt-get install -y python-pip gcc g++ ##python-dev
+RUN apt-get install -y python-pip gcc g++
 
 RUN pip install flask requests
 
-ADD static/ /opt/docker/repo_viewer/static/
-ADD templates/ /opt/docker/repo_viewer/templates
-ADD python_docker_index.py /opt/docker/repo_viewer/python_docker_index.py
-ADD config/repo.cfg /opt/docker/repo_viewer/config/repo.cfg
+ADD static/ /opt/docker/helmsman/static/
+ADD templates/ /opt/docker/helmsman/templates
+ADD docker_index.py /opt/docker/helmsman/docker_index.py
+ADD config/helmsman.cfg /opt/docker/helmsman/config/helmsman.cfg
 
-EXPOSE 33912
-CMD ["python", "/opt/docker/repo_viewer/python_docker_index.py"]
+EXPOSE 80
+CMD ["python", "/opt/docker/helmsman/docker_index.py"]

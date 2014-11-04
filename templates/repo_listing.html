@@ -1,9 +1,8 @@
 <!doctype html>
 <title>{{ app_title }}</title>
 
-<script src="{{url_for('static', filename='jquery-2.1.1.min.js')}}"></script>  
-<script src="{{url_for('static', filename='bootstrap/js/bootstrap.min.js')}}"></script> 
-
+<script src="{{url_for('static', filename='js/jquery-2.1.1.min.js')}}"></script>  
+<script src="{{url_for('static', filename='bootstrap/js/bootstrap.min.js')}}"></script>
 
 <link rel=stylesheet type=text/css href="{{url_for('static',filename='bootstrap/css/bootstrap.css')}}">
     <body>
@@ -14,11 +13,12 @@
             </div>
             <div class="row">
                 <div class="span12 well  well-small">
-                    
                     <!-- Show the App Name and Registry Info -->
                     <div class="col-xs-12 col-md-8">
+                        <span><image style="float:left" src='{{url_for('static', filename='images/helmsman.png')}}' title='Helmsman'></span>
                         <h1>{{ app_title }}</h1>
                         <h5>Registry: {{ host }} </h5>
+                        Registry Version: {{ registry_version }}
                     </div>
                     
                     <div class="col-xs-6 col-md-4">
@@ -34,78 +34,83 @@
                             </div>
                         </form>
                     </div>
+                
+                    <div>
+                        <div class="col-xs-12 col-md-8">
+                            <br>
+                        </div>
+                    </div>
 
-                <br>
+                    <!-- This table holds the list of repos, their tags, and important links -->
+                    <table class="table table-striped table-condensed table-responsive" overflow="auto">
+                        <th>Repo Name</th>
+                        <th>Repo Actions</th>
+                        <th>Repo Description</th>
+                        <th>Tags</th>
+                        <th>Image ID</th>
+                        <th>Tag Actions</th>
+                        
+                        <!-- Loop through the repos -->
+                        {% for repository in repos %}
+                            <tr>
+                                <td> {{ repository.Name }} </td>
+                                <!-- Add a link to delete the repo -->
+                                <td>
+                                    <a class="delete-repo-link" id="delete-repo-link" data-toggle="modal" data-target=".delete-repo-modal-sm" data-id="{{ repository.Name }}">
+                                    <image src='{{url_for('static', filename='images/icons/trash.png')}}' title='Delete Repo'>
 
-                <!-- This table holds the list of repos, their tags, and important links -->
-                <table class="table table-striped table-condensed table-responsive" overflow="auto">
-                    <th>Repo Name</th>
-                    <th>Repo Actions</th>
-                    <th>Repo Description</th>
-                    <th>Tags</th>
-                    <th>Image ID</th>
-                    <th>Tag Actions</th>
-                    
-                    <!-- Loop through the repos -->
-                    {% for repository in repos %}
-                        <tr>
-                            <td> {{ repository.Name }} </td>
-                            <!-- Add a link to delete the repo -->
-                            <td>
-                                <a class="delete-repo-link" id="delete-repo-link" data-toggle="modal" data-target=".delete-repo-modal-sm" data-id="{{ repository.Name }}">
-                                <image src='{{url_for('static', filename='images/icons/trash.png')}}' title='Delete Repo'>
+                                </td>
+                                <td> {{ repository.Description }}</td>
+                                <td> 
+                                    {% for tag in repository.Tags %} 
+                                        {% if tag.Image_Link | length > 0 %}
+                                            <a href="{{ tag.Image_Link }}">{{ tag.Tag }}</a>
+                                            <br>
+                                            
+                                        {% else %}
+                                            {{ tag.Tag }}
+                                            <br>
+                                            
+                                        {% endif %}
+                                
+                                    {% endfor %}
 
-                            </td>
-                            <td> {{ repository.Description }}</td>
-                            <td> 
-                                {% for tag in repository.Tags %} 
-                                    {% if tag.Image_Link | length > 0 %}
-                                        <a href="{{ tag.Image_Link }}">{{ tag.Tag }}</a>
-                                        <br>
-                                        
-                                    {% else %}
-                                        {{ tag.Tag }}
-                                        <br>
-                                        
-                                    {% endif %}
-                            
-                                {% endfor %}
-
-                            </td>
-                            <td> 
-                                {% for tag in repository.Tags %} 
-                                    {% if tag.Image_Link | length > 0 %}
-                                        {{ tag.Short_ID }}
-                                        <br>
-                                    {% else %}
-                                        <br>
-                                    {% endif %}
-                            
-                                {% endfor %}
-                            </td>
-                            <td>
-                                {% for tag in repository.Tags %} 
-                                    {% if tag.Image_Link | length > 0 %}
-                                        
-                                        <a class="info-link" data-toggle="modal" data-target=".info-modal-lg" data-id="{&quot;link&quot;:&quot;{{url_for('.get_tag_info', image_id=tag.Image_ID)}}&quot;, &quot;repo&quot;:&quot;{{repository.Name}}&quot;,&quot;tag&quot;:&quot;{{tag.Tag}}&quot;}">
-                                            <image src='{{url_for('static', filename='images/icons/inspect.png')}}' title='Image Info'/>
-                                        </a>
-                                        
-                                        <a class="tag-link" id="tag-link-{{repository.Name}}-{{tag.Tag}}" data-toggle="modal" data-target=".tag-modal-lg" data-id="{&quot;id&quot;:&quot;{{ tag.Image_ID }}&quot;, &quot;repo&quot;:&quot;{{ repository.Name}}&quot;}" >
-                                            <image src='{{url_for('static', filename='images/icons/add.png')}}' title='Add Tag to Image'/>
-                                        </a>
-                                        <a class="delete-tag-link" id="delete-tag-link-{{repository.Name}}-{{tag.Tag}}" data-toggle="modal" data-target=".delete-tag-modal-sm" data-id="{&quot;tag&quot;:&quot;{{ tag.Tag }}&quot;, &quot;repo&quot;:&quot;{{ repository.Name}}&quot;}">
-                                            <image src='{{url_for('static', filename='images/icons/trash.png')}}' title='Delete Tag'/>
-                                        <br>
-                                    {% else %}
-                                        <br>
-                                    {% endif %}
-                            
-                                {% endfor %}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </table>
+                                </td>
+                                <td> 
+                                    {% for tag in repository.Tags %} 
+                                        {% if tag.Image_Link | length > 0 %}
+                                            {{ tag.Short_ID }}
+                                            <br>
+                                        {% else %}
+                                            <br>
+                                        {% endif %}
+                                
+                                    {% endfor %}
+                                </td>
+                                <td>
+                                    {% for tag in repository.Tags %} 
+                                        {% if tag.Image_Link | length > 0 %}
+                                            
+                                            <a class="info-link" data-toggle="modal" data-target=".info-modal-lg" data-id="{&quot;link&quot;:&quot;{{url_for('.get_tag_info', image_id=tag.Image_ID)}}&quot;, &quot;repo&quot;:&quot;{{repository.Name}}&quot;,&quot;tag&quot;:&quot;{{tag.Tag}}&quot;}">
+                                                <image src='{{url_for('static', filename='images/icons/inspect.png')}}' title='Image Info'/>
+                                            </a>
+                                            
+                                            <a class="tag-link" id="tag-link-{{repository.Name}}-{{tag.Tag}}" data-toggle="modal" data-target=".tag-modal-lg" data-id="{&quot;id&quot;:&quot;{{ tag.Image_ID }}&quot;, &quot;repo&quot;:&quot;{{ repository.Name}}&quot;}" >
+                                                <image src='{{url_for('static', filename='images/icons/add.png')}}' title='Add Tag to Image'/>
+                                            </a>
+                                            <a class="delete-tag-link" id="delete-tag-link-{{repository.Name}}-{{tag.Tag}}" data-toggle="modal" data-target=".delete-tag-modal-sm" data-id="{&quot;tag&quot;:&quot;{{ tag.Tag }}&quot;, &quot;repo&quot;:&quot;{{ repository.Name}}&quot;}">
+                                                <image src='{{url_for('static', filename='images/icons/trash.png')}}' title='Delete Tag'/>
+                                            <br>
+                                        {% else %}
+                                            <br>
+                                        {% endif %}
+                                
+                                    {% endfor %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -120,12 +125,26 @@
                     </div>
               
                     <div class="modal-body">  
-                        <form role="form">
+                       <div class="row">
+                    
                             
-                            <div class="form-group">
-                                <label for="pull_request">To make a pull request, use:</label> 
-                                <a href="#" onclick='return copyToClipboard(pull_request.value)'>(Copy It!)</a>
+                            <div class="col-xs-10">
+                                 
+                                <div class="well well-small" style="background-color:#f0ad4e">
+                                    <span class="glyphicon glyphicon-info-sign"></span>
+                                    The Entrypoints, Commands, and Ports sections only appear if they contain values.
+                                
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <form role="form-horizontal">
+                            
+                            <div class="form-group has-feedback">
+                                <label class="control-label" for="pull_request">To make a pull request, use:</label> 
                                 <input type="text" class="form-control" name="pull_request" readonly="" autocomplete="off" style="cursor: auto; background-color:#5bc0de; border:none" id="pull_request" value="">
+                                <span class="glyphicon glyphicon-open form-control-feedback" onclick='return copyToClipboard(pull_request.value)'></span>
+                                
                             </div>
                             
                             <div class="form-group">
@@ -148,15 +167,21 @@
                                 <input type="text" class="form-control" name="image_id" readonly="" autocomplete="off" style="cursor: auto;" id="image_id" value="">
                             </div>
                 
-                            <div class="form-group">
+                            <div class="form-group" name="exposed-ports-div" id="exposed-ports-div">
                                 <label for="exposed_ports">Exposed Ports</label>
                                 <textarea rows="4" class="form-control" name="exposed_ports" readonly="" autocomplete="off" style="cursor: auto;" id="exposed_ports" value=""></textarea>
                             </div>
 
-                            <div class="form-group">
+                            <div class="form-group" name="entrypoints-div" id="entrypoints-div">
                                 <label for="entrypoints">Entry Points</label>
                                 <textarea rows="4" class="form-control" name="entrypoints" readonly="" autocomplete="off" style="cursor: auto;" id="entrypoints" value=""></textarea>
                             </div>
+
+                            <div class="form-group" name="commands-div" id="commands-div">
+                                <label for="commands">Commands</label>
+                                <textarea rows="4" class="form-control" name="commands" readonly="" autocomplete="off" style="cursor: auto;" id="commands" value=""></textarea>
+                            </div>
+
                         </form>
                     </div>  
                     <div class="modal-footer">   
@@ -189,8 +214,8 @@
                                     <input type="text" class="form-control" name="tag_image_id"  readonly autocomplete="off" style="cursor: auto;" class="form-control" id="tag_image_id" value="">
                                 </div>
                                 <div class="form-group">
-                                    <label for="tag_name">New Tag</label>
-                                    <input type="text" class="form-control" name="tag_name"  autocomplete="off" style="cursor: auto;" class="form-control" id="tag_name" value="">
+                                    <label for="tag_name">New Tag <small>(Only alphanumeric, '-', and '.' are allowed)</small></label>
+                                    <input type="text" class="form-control" name="tag_name"  autocomplete="off" style="cursor: auto;" class="form-control" id="tag_name" required pattern="[\w*\.*\-*]+"value="">
                                 </div>
                             </div>     
                             <button type="submit" id="search_btn" class="btn btn-primary btn-sm" form-id="add_tag">Add Tag</button>   
@@ -322,26 +347,49 @@
                 $("#image_author").val(data.author);
                 $("#image_created").val(data.created);
                 $("#image_id").val(data.id);
-                //console.log(data);
-
-                $("#exposed_ports").text('');
-
-                // ExposedPorts come across as keys
-                var port_keys = Object.keys(data.config.ExposedPorts);
-                for (var ii in port_keys)
-                {
-                    $("#exposed_ports").append(port_keys[ii]);
-                    $("#exposed_ports").append('\r');
-                }
+                console.log(data);
                 
-                $("#entrypoints").text('');
-                for (var ii in data.config.Entrypoint)
+                
+                if (data.config.ExposedPorts != null)
                 {
-                   
-                    $("#entrypoints").append(data.config.Entrypoint[ii]);
-                    $("#entrypoints").append('\r');
-                    
+                    $("#exposed_ports").text('');
+                    $("#exposed-ports-div").show();
+
+                    // ExposedPorts come across as keys
+                    var port_keys = Object.keys(data.config.ExposedPorts);
+                    for (var ii in port_keys)
+                    {
+                        $("#exposed_ports").append(port_keys[ii]);
+                        $("#exposed_ports").append('\r');
+                    }
+                } else $("#exposed-ports-div").hide();
+                
+                if (data.config.Entrypoint != null )
+                {
+                    $("#entrypoints-div").show();
+                    $("#entrypoints").text('');
+                    for (var ii in data.config.Entrypoint)
+                    {
+                       
+                        $("#entrypoints").append(data.config.Entrypoint[ii]);
+                        $("#entrypoints").append('\r');
+                        
+                    }
+                } else $("#entrypoints-div").hide();
+
+
+                if (data.config.Cmd != null )
+                {
+                    $("#commands-div").show();
+                    $("#commands").text('');
+                    for (var ii in data.config.Cmd)
+                    {
+                        $("#commands").append(data.config.Cmd[ii]);
+                        $("#commands").append('\r');
+                        
+                    }
                 }
+                else $("#commands-div").hide();
                 
             })
             .done(function() 
@@ -422,7 +470,6 @@
         // can use for simulating a copy to clipboard kind of function
         function copyToClipboard (text) {  window.prompt ("Copy to clipboard: Ctrl+C, Enter", text); }
 
-    
     </script>
 </body>
 
