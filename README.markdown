@@ -1,4 +1,4 @@
-![Image of Helmsman](/static/images/helmsman.png)
+![Image of Helmsman](static/images/helmsman.png)
 
 Helmsman
 ==========================
