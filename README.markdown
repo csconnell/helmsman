@@ -1,4 +1,4 @@
-![Image of Helmsman](http://postimg.org/image/6wkuyfc2z/)
+![Image of Helmsman](http://s25.postimg.org/43rneebqj/helmsman.png)
 
 Helmsman
 ==========================
@@ -68,3 +68,8 @@ Future
 * Create configuration and new screens for viewing docker host information
 * Create a home screen for Helmsman so you can see what "modules" exist
 * Add more modules!
+
+Screenshots
+-----------
+
+![Screenshot of Helmsman](http://s25.postimg.org/4f93r5s6n/Helmsman_screenshot.png)
