@@ -1,17 +1,17 @@
 ###############################################################################################
 ## CSC 10/29/2014
 ## 
-## This image holds a simple project for viewing a private repo
+## This contains Helmsman, which allows you to manage a private Docker Registry and view / manage Docker hosts.
 ##
-## Build with docker build -t depot.dev.lotame.com/helmsman -rm .
+## Build with docker build -t [YOUR REPO]/helmsman -rm .
 ##
 ## Run with something like this:
 ##
-##    docker run -d -name=helmsman -p 80:80  -v /opt/docker/helsman/config:/opt/docker/helmsman/config depot.dev.lotame.com/helmsman
+##    docker run -d -name=helmsman -p 80:80  -v /opt/docker/helmsman/config:/opt/docker/helmsman/config [YOUR REPO]/helmsman
 ##
-## Currently the Helmsman config file holds the location of the private registry.
+## Currently the Helmsman config file holds the location of the private registry, the docker hosts, and the module definitions.
 ##
-## An optional config file for the repo-viewer is mounted at:
+## An optional config file for Helmsman is mounted at:
 ##
 ##    /opt/docker/helmsman/config
 ##  
@@ -28,12 +28,12 @@ MAINTAINER  CSConnell "cconnell@lotame.com"
 RUN apt-get update
 RUN apt-get install -y python-pip gcc g++
 
-RUN pip install flask requests
+RUN pip install flask requests layered-yaml-attrdict-config
 
-ADD static/ /opt/docker/helmsman/static/
-ADD templates/ /opt/docker/helmsman/templates
-ADD docker_index.py /opt/docker/helmsman/docker_index.py
-ADD config/helmsman.cfg /opt/docker/helmsman/config/helmsman.cfg
+ADD helmsman/ /opt/docker/helmsman/helmsman
+ADD bin/ /opt/docker/helmsman/bin
+ADD config/helmsman.yml /opt/docker/helmsman/config/helmsman.yml
 
 EXPOSE 80
-CMD ["python", "/opt/docker/helmsman/docker_index.py"]
+ENV PYTHONPATH $PYTHONPATH:/opt/docker/helmsman
+CMD ["python", "/opt/docker/helmsman/bin/run.py"]

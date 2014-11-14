@@ -1,0 +1,229 @@
+{% extends "layout.html" %}
+    {% block body %}
+        <div class="container">
+            <div class="row">
+                <br>
+                <br>
+            </div>
+            
+            <div class="span12 well  well-small">
+                <div class="row">
+                    <div class="col-xs-12 col-md-8">
+                        <span><a href="{{url_for('homepage')}}"><image style="float:left" src='{{url_for('static', filename='images/helmsman.png')}}' title='Helmsman'/></image></a></span>
+                        <h1>{{ app_title }} - {{ module_title }}</h1>
+                        <hr>
+                        <h3>{{ scope }} Containers on {{ host }}</h3>
+                    </div>
+                    <div class="col-xs-6 col-md-4">
+                        <br>
+                        <br>
+                    </div>
+                    <div>
+                        <div class="col-xs-12 col-md-8">
+                            <br>
+                        </div>
+                    </div>
+                    
+                </div>
+
+                <table class="table table-striped table-condensed table-responsive" overflow="auto">
+                    <th class="text-center">Container Name(s)</th>
+
+                    <th class="text-center">Container Status</th>
+                    <th class="text-center">Creation Date</th>
+                    <th class="text-center">Container Image</th>
+                    <th class="text-center">Ports</th>
+                    <th class="text-center">ID</th>
+                    <th class="text-center">
+                        Commands
+                        <br>
+                        <small>(Hover)</small>
+                    </th>
+                    <th class="text-center">Actions</th>
+
+                    
+                    <!-- Loop through the containers -->
+                    
+                    {% for container in containers %}
+                        <tr>
+                            <td>
+                                {% for name in container.Names %} 
+                                   {{ name }}
+                                    <br>
+                                
+                                {% endfor %}
+                            </td>
+                            <td> {{ container['Status'] }} </td>
+                            <td> {{ container['Created'] }} </td>
+                            <td> {{ container['Image'] }} </td>
+                            <td>
+                                {% for port in container.Ports %} 
+                                   {{ port.PrivatePort}}/{{ port.Type }}
+                                    <br>
+                                
+                                {% endfor %}
+                            </td>
+                            <td>{{ container['Id'] }}</td>
+                            <td class="text-center">
+                                <span class="glyphicon glyphicon-list" title="{{ container['Command'] }}"></span> 
+                            </td>
+                            <td>
+                                {% if "Up" not in container['Status'] %}
+                                    <a class="container-start" id="container-start-{{ host }}-{{ container['Id'] }}"  data-id="{{ container['Id'] }}" >
+                                        <span class="glyphicon glyphicon-play" title="Start Container"></span>
+                                    </a>
+                                {% endif %}
+                                {% if "Up" in container['Status'] %}
+                                    <a class="container-stop" id="container-stop-{{ host }}-{{ container['Id'] }}"  data-id="{{ container['Id'] }}" >
+                                        <span class="glyphicon glyphicon-stop" title="Stop Container"</span>
+                                    </span>
+                                    <a class="container-restart" id="container-restart-{{ host }}-{{ container['Id'] }}"  data-id="{{ container['Id'] }}" >
+                                        <span class="glyphicon glyphicon-repeat" title="Restart Container"</span>
+                                    </span>
+                                {% endif %}
+                                {% if "Up" not in container['Status'] %}
+                                    <a class="container-remove" id="container-remove-{{ host }}-{{ container['Id'] }}"  data-id="{{ container['Id'] }}" >
+                                        <span class="glyphicon glyphicon-remove" title="Remove Container"></span>
+                                    </a>
+                                {% endif %}
+
+                            </td>
+                            
+                            
+                        </tr>
+                    {% endfor %}
+                    
+                </table>
+
+
+
+            </div>
+
+
+        </div>
+
+        <script type="text/javascript">
+
+            // Clicking the stop link
+            $(document).on("click", ".container-stop", function () 
+            {
+
+                //We get the host for the data
+                var host = '{{ host }}';
+
+                // Get the container id
+                var container = $(this).data('id');
+
+                // We set up the linkvalue with a placeholder, as we need to replace it with the host
+                var linkValue = "{{url_for('stop_container', the_host='HOST', container_id='CONTAINER_ID')}}";
+
+                linkValue = linkValue.replace("HOST", host);
+                linkValue = linkValue.replace("CONTAINER_ID", container);
+               
+                $.ajax({
+                    type: "POST",
+                    url: linkValue,
+                    //data: data,
+                    success: function(result)
+                    {
+                        location.reload();
+                    }
+                });
+            
+            });
+
+            // Clicking the start link
+            $(document).on("click", ".container-start", function () 
+            {
+
+                //We get the host for the data
+                var host = '{{ host }}';
+
+                // Get the container id
+                var container = $(this).data('id');
+
+                // We set up the linkvalue with a placeholder, as we need to replace it with the host
+                var linkValue = "{{url_for('start_container', the_host='HOST', container_id='CONTAINER_ID')}}";
+
+                linkValue = linkValue.replace("HOST", host);
+                linkValue = linkValue.replace("CONTAINER_ID", container);
+               
+                $.ajax({
+                    type: "POST",
+                    url: linkValue,
+                    //data: data,
+                    success: function(result)
+                    {
+                        location.reload();
+                    }
+                });
+            
+            });
+
+            // Clicking the restart link
+            $(document).on("click", ".container-restart", function () 
+            {
+
+                //We get the host for the data
+                var host = '{{ host }}';
+
+                // Get the container id
+                var container = $(this).data('id');
+
+                // We set up the linkvalue with a placeholder, as we need to replace it with the host
+                var linkValue = "{{url_for('restart_container', the_host='HOST', container_id='CONTAINER_ID')}}";
+
+                linkValue = linkValue.replace("HOST", host);
+                linkValue = linkValue.replace("CONTAINER_ID", container);
+               
+                $.ajax({
+                    type: "POST",
+                    url: linkValue,
+                    //data: data,
+                    success: function(result)
+                    {
+                        location.reload();
+                    }
+                });
+            
+            });
+
+            // Clicking the remove link
+            $(document).on("click", ".container-remove", function () 
+            {
+
+                //We get the host for the data
+                var host = '{{ host }}';
+
+                // Get the container id
+                var container = $(this).data('id');
+                
+                // We set up the linkvalue with a placeholder, as we need to replace it with the host
+                var linkValue = "{{url_for('remove_container', the_host='HOST', container_id='CONTAINER_ID')}}";
+
+                linkValue = linkValue.replace("HOST", host);
+                linkValue = linkValue.replace("CONTAINER_ID", container);
+               
+                if ( confirm (' Are you sure you want to delete ' + container +'?' ))
+                {
+                    $.ajax({
+                        type: "DELETE",
+                        url: linkValue,
+                        //data: data,
+                        success: function(result)
+                        {
+                            location.reload();
+                        }
+                    });    
+                } else 
+                {
+                    // Just don't do anything!
+                }
+                
+            
+            });
+
+            
+        </script>
+
+    {% endblock %}

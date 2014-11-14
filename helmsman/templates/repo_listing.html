@@ -1,23 +1,20 @@
-<!doctype html>
-<title>{{ app_title }}</title>
 
-<script src="{{url_for('static', filename='js/jquery-2.1.1.min.js')}}"></script>  
-<script src="{{url_for('static', filename='bootstrap/js/bootstrap.min.js')}}"></script>
-
-<link rel=stylesheet type=text/css href="{{url_for('static',filename='bootstrap/css/bootstrap.css')}}">
-    <body>
+    {% extends "layout.html" %}
+    {% block body %}
         <div class="container">
             <div class="row">
                 <br>
                 <br>
             </div>
-            <div class="row">
-                <div class="span12 well  well-small">
+            
+            <div class="span12 well  well-small">
+                <div class="row">
                     <!-- Show the App Name and Registry Info -->
                     <div class="col-xs-12 col-md-8">
-                        <span><image style="float:left" src='{{url_for('static', filename='images/helmsman.png')}}' title='Helmsman'></span>
-                        <h1>{{ app_title }}</h1>
-                        <h5>Registry: {{ host }} </h5>
+                        <span><a href="{{url_for('homepage')}}"><image style="float:left" src='{{url_for('static', filename='images/helmsman.png')}}' title='Helmsman'></image></a></span>
+                        <h1>{{ app_title }} - {{ module_title }}</h1>
+                        <hr>
+                        <h3>Registry: {{ host }} </h3>
                         Registry Version: {{ registry_version }}
                     </div>
                     
@@ -471,6 +468,7 @@
         function copyToClipboard (text) {  window.prompt ("Copy to clipboard: Ctrl+C, Enter", text); }
 
     </script>
-</body>
+    {% endblock %}
+
 
 

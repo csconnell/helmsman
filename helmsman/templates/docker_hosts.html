@@ -1,0 +1,190 @@
+{% extends "layout.html" %}
+    {% block body %}
+        <div class="container">
+            <div class="row">
+                <br>
+                <br>
+            </div>
+            
+            <div class="span12 well  well-small">
+                <div class="row">
+                    <div class="col-xs-12 col-md-8">
+                        <span><a href="{{url_for('homepage')}}"><image style="float:left" src='{{url_for('static', filename='images/helmsman.png')}}' title='Helmsman'/></image></a></span>
+                        <h1>{{ app_title }} - {{ module_title }}</h1>
+                        <hr>
+                        <h3>Docker Host Instances</h3>
+                    </div>
+                    <div class="col-xs-6 col-md-4">
+                        <br>
+                        <br>
+                    </div>
+                    <div>
+                        <div class="col-xs-12 col-md-8">
+                            <br>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+                
+            {% for host_row in hosts | batch(2) %}
+                <div class="row">
+                    {% for host in host_row %}
+                    <div class="col-md-6 col-md-offset-0">
+                        <div class="panel panel-default">
+
+                            <div class="panel-heading inline">
+                            
+
+                                <div class="col-md-4 col-md-offset-0">
+                                    <h3 class="panel-title">
+                                
+                                        
+                                            {{ host.Host }}
+                                        
+                                    </h3>
+                                </div>
+                                <div class="col-md-1 col-md-offset-7">
+                                    <a class="raw-json-link" id="raw-json-link-{{ host.Host }}" data-toggle="modal" data-target=".raw-json-modal-lg" data-id="{&quot;host&quot;:&quot;{{ host }}&quot;}" >
+                                        <span class="glyphicon glyphicon-new-window" title="View raw JSON"></span>
+                                                    
+                                    </a>
+                                    
+                                </div>
+                                <br>
+                                
+                                
+                            </div>
+                            <div class="panel-body">
+
+                                <div class="col-md-4 col-md-offset-0">Host OS</div><div class="col-md-2 col-md-offset-0">:</div><div class="col-md-4 col-md-offset-0">{{ host.Version_Info.Os }}</div>
+                                <br>
+                                <div class="col-md-4 col-md-offset-0">Host Kernel</div><div class="col-md-2 col-md-offset-0">:</div><div class="col-md-4 col-md-offset-0">{{ host.Version_Info.KernelVersion }}</div>
+                                <br>
+                                <div class="col-md-4 col-md-offset-0">Host Go Version</div><div class="col-md-2 col-md-offset-0">:</div><div class="col-md-4 col-md-offset-0">{{ host.Version_Info.GoVersion }}</div>
+                                <br>
+                                <div class="col-md-4 col-md-offset-0">Host Architecture</div><div class="col-md-2 col-md-offset-0">:</div><div class="col-md-4 col-md-offset-0">{{ host.Version_Info.Arch }}</div>
+                                <br>
+                                <div class="col-md-4 col-md-offset-0">Host Docker Version</div><div class="col-md-2 col-md-offset-0">:</div><div class="col-md-4 col-md-offset-0">{{ host.Version_Info.Version }}</div>
+                                <br>
+                                <div class="col-md-4 col-md-offset-0">Host API Version</div><div class="col-md-2 col-md-offset-0">:</div><div class="col-md-4 col-md-offset-0">{{ host.Version_Info.ApiVersion }}</div>
+                                <br>
+                                <div class="col-md-4 col-md-offset-0">Container Count</div><div class="col-md-2 col-md-offset-0">:</div><div class="col-md-4 col-md-offset-0">
+                                    <!--<a class="all-container-link" id="raw-json-link-{{ host.Host }}" data-toggle="modal" data-target=".container-modal-lg" data-id="{{ host.Host }}" >-->
+                                    <a class="all-container-link" id="raw-json-link-{{ host.Host }}" data-id="{{ host.Host }}" >
+                                        {{ host.Host_Info.Containers }}
+                                    </a>
+                                    /
+                                    <a class="active-container-link" id="raw-json-link-{{ host.Host }}" data-toggle="modal" data-target=".container-modal-lg" data-id="{{ host.Host }}" >
+                                        {{ host.Running_Containers }} Running
+                                    </a>
+                                    
+                                </div>
+                                <br>
+                                <div class="col-md-4 col-md-offset-0">Total Image Count</div><div class="col-md-2 col-md-offset-0">:</div><div class="col-md-4 col-md-offset-0">{{ host.Total_Images }}</div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <br>
+            {% endfor %}
+            
+            
+        </div>
+
+        <!-- Modal for viewing row json -->
+        <div class="modal fade raw-json-modal-lg" tabindex="-1" role="dialog" aria-hidden="true" id="rawJsonDialog">
+            <div class="modal-dialog modal-lg">
+            
+                <div class="modal-content">
+                    <div class="modal-header">  
+                        <a class="close" data-dismiss="modal">×</a>  
+                        <h3 name="raw-json-header" id="raw-json-header">Raw JSON</h3>  
+                    </div>
+              
+                    <div class="modal-body" name="mb" id="mb">  
+                       
+                
+                    </div>  
+                    <div class="modal-footer">  
+                        <a href="#" id="close_btn" class="btn" data-dismiss="modal">Close</a>
+                    </div>  
+                </div>
+            </div>
+        </div>
+        <!-- End of modal for viewing raw JSON -->
+
+        <!-- Modal for showing containers -->
+        <!--
+        <div class="modal fade container-modal-lg" tabindex="-1" role="dialog" aria-hidden="true" id="containerDialog">
+            <div class="modal-dialog modal-lg">
+            
+                <div class="modal-content">
+                    <div class="modal-header">  
+                        <a class="close" data-dismiss="modal">×</a>  
+                        <h3 name="container-header" id="container-header">Container List</h3>  
+                    </div>
+              
+                    <div class="modal-body" name="mb-cont" id="mb-cont">  
+
+                    </div>  
+                    <div class="modal-footer">  
+                        <a href="#" id="close_btn" class="btn" data-dismiss="modal">Close</a>
+                    </div>  
+                </div>
+            </div>
+        </div>
+        -->
+        <!-- End of modal for showing containers -->
+            
+
+        <script type="text/javascript">
+            
+            // Clicking the raw-json link .. show the raw JSON
+            $(document).on("click", ".raw-json-link", function () 
+            {
+
+                var the_data = $(this).data('id').host.replace(/u'/g, "'").replace(/'/g, '"');
+                
+                $("#mb").text(the_data);
+                host_info = $.parseJSON(the_data);
+                $("#raw-json-header").text("Raw JSON for " + host_info.Host);
+                
+            });
+
+            // Clicking the active-container list link
+            $(document).on("click", ".active-container-link", function () 
+            {
+
+                //We get the host for the data
+                var host = $(this).data('id');
+                
+                // We set up the linkvalue with a placeholder, as we need to replace it with the host
+                var linkValue = "{{url_for('get_active_containers', the_host='REPLACE_ME')}}"
+
+                window.location = linkValue.replace("REPLACE_ME", host);
+            
+            });
+
+            // Clicking the all-container list link
+            $(document).on("click", ".all-container-link", function () 
+            {
+
+                //We get the host for the data
+                var host = $(this).data('id');
+                
+                // We set up the linkvalue with a placeholder, as we need to replace it with the host
+                var linkValue = "{{url_for('get_all_containers', the_host='REPLACE_ME')}}"
+
+                window.location = linkValue.replace("REPLACE_ME", host);
+               
+            
+            });
+
+
+        </script>
+            
+            
+    {% endblock %}

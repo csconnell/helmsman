@@ -1,0 +1,12 @@
+<!doctype html>
+<title>{{ app_title }}</title>
+
+<script src="{{url_for('static', filename='js/jquery-2.1.1.min.js')}}"></script>  
+<script src="{{url_for('static', filename='bootstrap/js/bootstrap.min.js')}}"></script>
+
+<link rel=stylesheet type=text/css href="{{url_for('static',filename='bootstrap/css/bootstrap.css')}}">
+    <body>
+        {% block body %}
+    
+        {%endblock%}
+    </body>

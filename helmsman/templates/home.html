@@ -1,0 +1,63 @@
+{% extends "layout.html" %}
+    {% block body %}
+        <div class="container">
+            <div class="row">
+                <br>
+                <br>
+            </div>
+            
+            <div class="span12 well  well-small">
+                <div class="row">
+                    <div class="col-xs-12 col-md-8">
+                        <span><a href="{{url_for('homepage')}}"><image style="float:left" src='{{url_for('static', filename='images/helmsman.png')}}' title='Helmsman'/></image></a></span>
+                        <h1>{{ app_title }} - Home</h1>
+                        <hr>
+                        <h3>Find waypoints for the Helsman</h3>
+                    </div>
+                    <div class="col-xs-6 col-md-4">
+                        <br>
+                        <br>
+                    </div>
+                    <div>
+                        <div class="col-xs-12 col-md-8">
+                            <br>
+                        </div>
+                    </div>
+                    
+                </div>
+                
+            </div>
+        
+
+            {% for module_row in modules | batch(2) %}
+                <div class="row">
+                    {% for module in module_row %}
+                    <div class="col-md-6 col-md-offset-0">
+                        <div class="panel panel-default">
+
+                            <div class="panel-heading inline">
+                            
+
+                                <div class="panel-title">        
+                                    <h3>{{ module.Name }}</h3>
+                                </div>
+                                
+                            </div>
+                            <div class="panel-body">
+                                {{ module.Description }}
+                                <br>
+                                <br>
+                                <a href="{{ module.Endpoint }}" class="btn btn-primary btn-block">Go to the {{ module.Name }}</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <br>
+            {% endfor %}
+        </div>
+
+            
+            
+            
+    {% endblock %}

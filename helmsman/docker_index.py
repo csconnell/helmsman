@@ -1,24 +1,20 @@
-import os
-from ConfigParser import SafeConfigParser
-from flask import Flask, render_template, request, redirect, url_for
+from flask import render_template, request, redirect, url_for
 import requests
+from helmsman import app, the_config
 
-parser = SafeConfigParser()
-app = Flask(__name__)
+base_url = ('%s%s:%s/%s' % (the_config.registry_protocol,
+                            the_config.registry_host,
+                            the_config.registry_port,
+                            the_config.registry_api_version))
 
-parser.read('/opt/docker/helmsman/config/helmsman.cfg')
-base_url = parser.get('registry', 'protocol')  \
-    + parser.get('registry', 'host') + ':' \
-    + parser.get('registry', 'port') + '/' \
-    + parser.get('registry', 'api_version')
+app_title = the_config.app_title
+module_title = the_config.modules['Index_Manager'].get('name')  #the_config.data.modules.Index_Manager.name
 
-app_title = parser.get('helmsman', 'title')
-host_and_port = parser.get('registry', 'host') + ':' \
-    + parser.get('registry', 'port')
-
+host_and_port = ('%s:%s' % (the_config.registry_host,
+                            the_config.registry_port))
 
 # This end point retrieves repo information from the registry remote API
-@app.route('/', methods=['GET'])
+#@app.route('/', methods=['GET'])
 @app.route('/repos', methods=['GET'])
 def get_repos_web():
     return find_repos()
@@ -50,7 +46,6 @@ def find_repos():
     for repo in json_to_return['results']:
         tags = []
 
-        #tag_request = requests.get(base_url + '/repositories/' + repo['name'] + '/tags', headers=headers)
         tag_request = requests.get('%s/repositories/%s/tags' % (base_url, repo['name']), headers=headers)
         if tag_request.status_code == 404:
             tags.append({'Tag': 'No tags found'})
@@ -60,7 +55,7 @@ def find_repos():
                 tags.append({'Tag': tag, 'Image_ID': image_id, 'Image_Link': image_link, 'Short_ID': image_id[0:12]})
 
         # With the Lotame setup everything shows under library, this allows us to remove that
-        if parser.getboolean('registry', 'strip_directory') == True:
+        if the_config.registry_strip_dir == True:
             repo_name = repo['name'].split('/')[1:][0]
 
         else:
@@ -74,6 +69,7 @@ def find_repos():
     return render_template('repo_listing.html',
         repos=repos,
         app_title=app_title,
+        module_title=module_title,
         host=host_and_port,
         criteria=criteria,
         registry_version=registry_version)
@@ -125,13 +121,6 @@ def get_registry_info():
     registry_info = requests.get(base_url + '/_ping', headers=headers).headers
     return registry_info['X-Docker-Registry-Version']
 
-
-if __name__ == '__main__':
-
-    port = int(os.environ.get('PORT', parser.get('helmsman', 'port')))
-    app.debug = True
-    app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
-    app.run(host='0.0.0.0', port=port)
 
 ##
 ## Notes - this is for a local registry with no namespace
