@@ -2,14 +2,26 @@ from helmsman import app, the_config
 from flask import render_template, request, redirect, url_for, jsonify
 import requests
 from datetime import date
+import json
 
 
 app_title = the_config.app_title
 module_title = the_config.modules['Host_Manager'].get('name') #the_config.data.modules.Host_Manager.name
 
-
 @app.route('/hosts', methods=['GET'])
-def get_docker_hosts():
+def get_docker_host_list():
+    host_collection = []
+    #headers = {'Accept': 'application/json'}
+    for host in the_config.data.docker_hosts:
+        host_collection.append({'Host': host.get('host')})
+
+    print host_collection
+    #return jsonify(host_collection)
+    return json.dumps(host_collection)
+
+
+@app.route('/hosts/info', methods=['GET'])
+def get_docker_hosts_info():
 
     host_collection = []
     headers = {'Accept': 'application/json'}
@@ -130,3 +142,58 @@ def restart_container(the_host, container_id):
 
     return_code = requests.post(base_url + '/containers/' + container_id + '/restart').text
     return 'Container Stopped'
+
+
+#def create_container(the_data):
+def create_container(docker_host,
+                     container_host_name,
+                     container_domain_name,
+                     image_id,
+                     container_name,
+                     volumes,
+                     port_specs,
+                     privileged=False,
+                     start_on_create=False):
+
+    #ports = {}
+    #for port_spec in port_specs.split('\n'):
+        #pos = port_spec.index(':')
+        #port_def.append()
+        #ports[port_spec[:pos]] = port_spec[pos + 1:]
+    #    ports['ports'] = port_spec
+
+    volume_list = {}
+    for volume in volumes.split('\n'):
+        pos = volume.index(':')
+        volume_list[volume[:pos]] = volume[pos + 1:]
+
+
+    post_data = {'Hostname': container_host_name,
+                 'Domainname': container_domain_name,
+                 'Image': image_id,
+                 'Volumes': volume_list}
+    #             'ExposedPorts': ports}
+
+    print post_data
+
+    for a_host in the_config.data.docker_hosts:
+        if (a_host.get('host') == docker_host):
+            base_url = ('http://%s:%s' % ( a_host.get('host') ,a_host.get('port') ))
+
+    param_data = 'name=%s' % container_name
+
+    # Get the configuration information
+    response = requests.post(base_url + '/containers/create', json=post_data, params=param_data)
+
+
+    if ( response.status_code in [200, 201] ) and ( start_on_create == 'on'):
+        start_container(docker_host, response.json()['Id'])
+        
+        return 'Created Container - %s' % response.json()
+    elif not start_on_create == 'on':
+        return 'Created container but did not start it - %s' % response.text
+    else:
+        return 'Did not create container - %s' % response.text
+    
+
+    

@@ -1,6 +1,7 @@
 from flask import render_template, request, redirect, url_for
 import requests
-from helmsman import app, the_config
+from helmsman import app, the_config, docker_hosts
+import json
 
 base_url = ('%s%s:%s/%s' % (the_config.registry_protocol,
                             the_config.registry_host,
@@ -122,13 +123,27 @@ def get_registry_info():
     return registry_info['X-Docker-Registry-Version']
 
 
-##
-## Notes - this is for a local registry with no namespace
-## /search is for getting the list of repos
-## /search/q=[search term] is for getting repos that meet the search
-## /repositories/[repo name]/tags is for retrieving tags on a repo
-## /images/[image id]/json will get you the data for an image
-## /images/[image id]/ancestry will get you the lineage for the image
-## PUT /v1/repositories/(namespace)/(repository)/tags/(tag*) is for setting a tag
-## DELETE /v1/repositories/(namespace)/(repository)/tags/(tag*) is for deleting a tag
-## DELETE /v1/repositories/(namespace)/(repository)/ is for deleting a repo
+@app.route('/images/create_containers', methods=['POST'])
+def create_containers():
+
+    image_id = request.form.get('create_tag_image_id')
+    host_name = request.form.get('container_host_name')
+    container_name = request.form.get('container_name')
+    volumes = request.form.get('volumes')
+    port_specs = request.form.get('port_specs')
+    privileged = request.form.get('privileged')
+    host=request.form.get('hosts')
+    container_domain_name = request.form.get('container_domain_name')
+    start_on_create = request.form.get('start_on_create')
+
+
+    return docker_hosts.create_container(image_id = image_id,
+                                         container_host_name = host_name,
+                                         container_domain_name = container_domain_name,
+                                         container_name = container_name,
+                                         privileged = privileged,
+                                         docker_host = host,
+                                         port_specs = port_specs,
+                                         volumes = volumes,
+                                         start_on_create = start_on_create)
+    

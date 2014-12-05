@@ -45,7 +45,7 @@
                         <th>Repo Description</th>
                         <th>Tags</th>
                         <th>Image ID</th>
-                        <th>Tag Actions</th>
+                        <th>Actions</th>
                         
                         <!-- Loop through the repos -->
                         {% for repository in repos %}
@@ -97,6 +97,12 @@
                                             </a>
                                             <a class="delete-tag-link" id="delete-tag-link-{{repository.Name}}-{{tag.Tag}}" data-toggle="modal" data-target=".delete-tag-modal-sm" data-id="{&quot;tag&quot;:&quot;{{ tag.Tag }}&quot;, &quot;repo&quot;:&quot;{{ repository.Name}}&quot;}">
                                                 <image src='{{url_for('static', filename='images/icons/trash.png')}}' title='Delete Tag'/>
+                                            </a>
+
+                                            <a class="create-container-link" id="create-container-link-{{repository.Name}}-{{tag.Tag}}" data-toggle="modal" data-target=".create-container-modal-lg" data-id="{{ tag.Image_ID }}">
+                                                <span class="glyphicon glyphicon-upload" aria-hidden="true" title='Create Container'></span>
+                                            </a>
+
                                             <br>
                                         {% else %}
                                             <br>
@@ -215,7 +221,7 @@
                                     <input type="text" class="form-control" name="tag_name"  autocomplete="off" style="cursor: auto;" class="form-control" id="tag_name" required pattern="[\w*\.*\-*]+"value="">
                                 </div>
                             </div>     
-                            <button type="submit" id="search_btn" class="btn btn-primary btn-sm" form-id="add_tag">Add Tag</button>   
+                            <button type="submit" id="tag_btn" class="btn btn-primary btn-sm" form-id="add_tag">Add Tag</button>   
                         </form>
                     </div>  
                     <div class="modal-footer">  
@@ -316,6 +322,85 @@
             </div>
         </div>
         <!-- End of Delete repo modal -->
+
+        <!-- Modal for creating a container from an image -->
+        <div class="modal fade create-container-modal-lg" tabindex="-1" role="dialog" aria-hidden="true" id="createContainerDialog">
+            <div class="modal-dialog modal-lg">
+            
+                <div class="modal-content">
+                    <div class="modal-header">  
+                        <a class="close" data-dismiss="modal">×</a>  
+                        <h3>Create a New Container</h3>  
+                    </div>
+              
+                    <div class="modal-body">  
+                        <form class="form" id="create_container" role="form" action="{{url_for('create_containers')}}" method="post">
+                            <div class="inline">    
+                                
+                                <div class="form-group">
+                                    <label for="create_tag_image_id">Image ID</label>
+                                    <input type="text" class="form-control" name="create_tag_image_id"  readonly autocomplete="off" style="cursor: auto;" class="form-control" id="create_tag_image_id" value="">
+                                </div>
+                                
+                                <div class="form-group">
+                                     <label for="hosts">Docker Host for Container</label>
+                                    <select class="form-control" id="hosts" name="hosts">
+                                        <!-- Gets Dynamically Populated -->
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="container_host_name">Host Name for Container <small>(Only alphanumeric and '-' are allowed)</small></label>
+                                    <input type="text" class="form-control" name="container_host_name" autocomplete="off" style="cursor: auto;" class="form-control" id="container_host_name" pattern="[\w*\-*]+" value="">
+                                </div>
+                                <div class="form-group">
+                                    <label for="container_domain_name">Container Domain Name <small>(Only alphanumeric, '-', and '.' are allowed)</small></label>
+                                    <input type="text" class="form-control" name="container_domain_name"  autocomplete="off" style="cursor: auto;" class="form-control" id="container_domain_name" required pattern="[\w*\.*\-*]+" value="">
+                                </div>
+                                <div class="form-group">
+                                    <label for="container_name">Container Name <small>(Only alphanumeric and '-' are allowed)</small></label>
+                                    <input type="text" class="form-control" name="container_name"  autocomplete="off" style="cursor: auto;" class="form-control" id="container_name" required pattern="[\w*\-*]+" value="">
+                                </div>
+                                <div class="form-group">
+                                    <label for="port_specs">Port Specs <small>([HOST PORT]:[CONTAINER PORT], each pair on a new line)</small></label>
+                                    <textarea class="form-control" rows="3" name="port_specs" id="port_specs"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="volumes">Volumes <small>( [HOST VOLUME]:[CONTAINER VOLUME], each pair on a new line )</small></label>
+                                    <textarea class="form-control" rows="3" name="volumes" id="volumes"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="radio_privileged">Privileged</label>
+                                    <div class="radio panel panel-default" name="radio_privileged">
+                                        <div class="panel-body">
+                                            <label><input type="radio" name="privileged" id="priveleged_true" value="true">True</label>
+                                            <br>
+                                            <label><input type="radio" name="privileged" id="priveleged_false" value="false" checked>False</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="container_command">Command</label>
+                                    <input type="text" class="form-control" name="container_command"  autocomplete="off" style="cursor: auto;" class="form-control" id="container_comand">
+                                </div>
+                                <div class="form-group">
+                                    <div class="checkbox">
+                                        
+                                        <label><input type="checkbox" name="start_on_create" id="start_on_create" checked>Start on Create?</label>
+                                        
+                                    </div>
+                                </div>
+                            </div>     
+                            <button type="submit" id="create_container_btn" class="btn btn-primary btn-sm" form-id="create_container">Create Container</button>   
+                        </form>
+                    </div>  
+                    <div class="modal-footer">  
+                        <a href="#" class="btn" data-dismiss="modal">Close</a>  
+                    </div>  
+                </div>
+            </div>
+        </div>
+        <!-- End of modal for creating a container -->
 
     </div>
 
@@ -466,6 +551,31 @@
 
         // can use for simulating a copy to clipboard kind of function
         function copyToClipboard (text) {  window.prompt ("Copy to clipboard: Ctrl+C, Enter", text); }
+
+        // Populate the host list
+        $(document).on("click", ".create-container-link", function ()
+        {
+            var image_id = $(this).data('id');
+            $('#create_tag_image_id').val(image_id);
+
+            linkValue = "{{url_for('get_docker_host_list')}}"
+            $.getJSON( linkValue, function(data)
+            {
+                //console.log(data);
+                //console.log(data.length);
+                for ( ii=0; ii < data.length; ii++)
+                {
+                    //console.log(data[ii].Host);
+                    $('#hosts').append('<option name=docker_host value=' + data[ii].Host + '>' + data[ii].Host +'</option>)');
+                }
+            });
+
+            // Make sure priveleged is set back to false
+            $('#privileged_false').checked="checked";
+            
+
+            
+        });
 
     </script>
     {% endblock %}

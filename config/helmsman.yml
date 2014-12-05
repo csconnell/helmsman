@@ -10,7 +10,7 @@ modules:
   - Host_Manager:
     description: Used to view Docker host information and manage containers.
     enabled: true
-    endpoint: hosts
+    endpoint: hosts/info
     name: Host Manager
 docker_hosts:
   - dkrdev01:
@@ -30,6 +30,3 @@ registry:
   protocol: http://
   repo_path: /v1/repositories
   strip_directory: true
-
-test:
-  value: myvalue

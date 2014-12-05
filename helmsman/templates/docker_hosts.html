@@ -71,11 +71,11 @@
                                 <br>
                                 <div class="col-md-4 col-md-offset-0">Container Count</div><div class="col-md-2 col-md-offset-0">:</div><div class="col-md-4 col-md-offset-0">
                                     <!--<a class="all-container-link" id="raw-json-link-{{ host.Host }}" data-toggle="modal" data-target=".container-modal-lg" data-id="{{ host.Host }}" >-->
-                                    <a class="all-container-link" id="raw-json-link-{{ host.Host }}" data-id="{{ host.Host }}" >
+                                    <a class="all-container-link" id="all-container-link-{{ host.Host }}" data-id="{{ host.Host }}" >
                                         {{ host.Host_Info.Containers }}
                                     </a>
                                     /
-                                    <a class="active-container-link" id="raw-json-link-{{ host.Host }}" data-toggle="modal" data-target=".container-modal-lg" data-id="{{ host.Host }}" >
+                                    <a class="active-container-link" id="active-container-link-{{ host.Host }}" data-toggle="modal" data-target=".container-modal-lg" data-id="{{ host.Host }}" >
                                         {{ host.Running_Containers }} Running
                                     </a>
                                     
